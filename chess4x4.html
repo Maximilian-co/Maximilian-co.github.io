@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>4x4 Schachbrett</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(4, 60px);
+            grid-template-rows: repeat(4, 60px);
+            gap: 2px;
+            background-color: #000;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #eee;
+            cursor: pointer;
+            font-size: 2em;
+            text-align: center;
+        }
+        .cell:nth-child(odd) {
+            background-color: #ddd;
+        }
+        .cell:nth-child(4n+1),
+        .cell:nth-child(4n+2) {
+            background-color: #ddd;
+        }
+        .cell:nth-child(4n+3),
+        .cell:nth-child(4n+4) {
+            background-color: #eee;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chessboard" id="chessboard">
+        <!-- Schachbrett Zellen -->
+        <div class="cell" data-index="0"></div>
+        <div class="cell" data-index="1"></div>
+        <div class="cell" data-index="2"></div>
+        <div class="cell" data-index="3"></div>
+        <div class="cell" data-index="4"></div>
+        <div class="cell" data-index="5"></div>
+        <div class="cell" data-index="6"></div>
+        <div class="cell" data-index="7"></div>
+        <div class="cell" data-index="8"></div>
+        <div class="cell" data-index="9"></div>
+        <div class="cell" data-index="10"></div>
+        <div class="cell" data-index="11"></div>
+        <div class="cell" data-index="12"></div>
+        <div class="cell" data-index="13"></div>
+        <div class="cell" data-index="14"></div>
+        <div class="cell" data-index="15"></div>
+    </div>
+
+    <div class="controls">
+        <div id="message">Weiß beginnt</div>
+        <button onclick="resetBoard()">Schachbrett zurücksetzen</button>
+    </div>
+
+    <script>
+        let selectedCell = null;
+        let currentPlayer = 'W'; // W für Weiß, S für Schwarz
+
+        function setupBoard() {
+            const initialSetup = [
+                '♖', '♘', '♗', '♕', // Weißer Turm, Springer, Läufer, Dame
+                '♙', '♙', '♙', '♙', // Weiße Bauern
+                '', '', '', '', // Leere Zeilen
+                '♟', '♟', '♟', '♟', // Schwarze Bauern
+                '♜', '♞', '♝', '♛'  // Schwarzer Turm, Springer, Läufer, Dame
+            ];
+
+            const cells = Array.from(document.querySelectorAll('.cell'));
+            cells.forEach((cell, index) => {
+                cell.innerHTML = initialSetup[index];
+                cell.onclick = () => handleCellClick(cell, index);
+            });
+            message.textContent = `Weiß beginnt`;
+        }
+
+        function handleCellClick(cell, index) {
+            if (selectedCell === null) {
+                // Selektiere die Zelle
+                if (cell.innerHTML && (currentPlayer === 'W' && cell.innerHTML !== '♟') || (currentPlayer === 'S' && cell.innerHTML !== '♙')) {
+                    selectedCell = { cell, index };
+                    cell.style.backgroundColor = 'lightblue';
+                }
+            } else {
+                // Bewege die Figur
+                if (isValidMove(selectedCell.index, index)) {
+                    cells[index].innerHTML = selectedCell.cell.innerHTML;
+                    selectedCell.cell.innerHTML = '';
+                    selectedCell.cell.style.backgroundColor = '';
+                    selectedCell = null;
+                    currentPlayer = currentPlayer === 'W' ? 'S' : 'W';
+                    message.textContent = `${currentPlayer === 'W' ? 'Weiß' : 'Schwarz'} ist am Zug`;
+                } else {
+                    selectedCell.cell.style.backgroundColor = '';
+                    selectedCell = null;
+                }
+            }
+        }
+
+        function isValidMove(fromIndex, toIndex) {
+            const fromRow = Math.floor(fromIndex / 4);
+            const fromCol = fromIndex % 4;
+            const toRow = Math.floor(toIndex / 4);
+            const toCol = toIndex % 4;
+            const piece = cells[fromIndex].innerHTML;
+
+            if (piece.includes('♙')) { // Bauer
+                return fromCol === toCol && ((toRow === fromRow + 1 && fromRow < toRow) || (toRow === fromRow + 2 && fromRow === 1 && fromRow < toRow));
+            } else if (piece.includes('♟')) { // Schwarzer Bauer
+                return fromCol === toCol && ((toRow === fromRow - 1 && fromRow > toRow) || (toRow === fromRow - 2 && fromRow === 6 && fromRow > toRow));
+            } else if (piece.includes('♖')) { // Turm
+                return fromRow === toRow || fromCol === toCol;
+            } else if (piece.includes('♘')) { // Springer
+                const rowDiff = Math.abs(toRow - fromRow);
+                const colDiff = Math.abs(toCol - fromCol);
+                return (rowDiff === 2 && colDiff === 1) || (rowDiff === 1 && colDiff === 2);
+            } else if (piece.includes('♗')) { // Läufer
+                return Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol);
+            } else if (piece.includes('♕')) { // Dame
+                return fromRow === toRow || fromCol === toCol || Math.abs(toRow - fromRow) === Math.abs(toCol - fromCol);
+            } else if (piece.includes('♚')) { // König
+                return Math.abs(toRow - fromRow) <= 1 && Math.abs(toCol - fromCol) <= 1;
+            }
+
+            return false;
+        }
+
+        function resetBoard() {
+            setupBoard();
+        }
+
+        setupBoard();
+    </script>
+
+</body>
+</html>
