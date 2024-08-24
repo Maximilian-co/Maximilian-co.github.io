@@ -7,9 +7,11 @@
     <style>
         body {
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
             background-color: #f0f0f0;
             font-family: Arial, sans-serif;
         }
@@ -34,12 +36,15 @@
         .cell:hover {
             background-color: #ddd;
         }
-        .message {
+        .controls {
             margin-top: 20px;
+            text-align: center;
+        }
+        .message {
             font-size: 1.5em;
         }
         button {
-            margin-top: 20px;
+            margin-top: 10px;
             padding: 10px 20px;
             font-size: 1em;
             cursor: pointer;
@@ -60,8 +65,10 @@
         <div class="cell" data-index="8"></div>
     </div>
 
-    <div class="message" id="message"></div>
-    <button onclick="resetGame()">Neues Spiel</button>
+    <div class="controls">
+        <div class="message" id="message"></div>
+        <button onclick="resetGame()">Neues Spiel</button>
+    </div>
 
     <script>
         const cells = document.querySelectorAll('.cell');
@@ -119,7 +126,7 @@
             board = ['', '', '', '', '', '', '', '', ''];
             currentPlayer = 'X';
             gameActive = true;
-            message.textContent = ` Spieler ${currentPlayer} beginnt `;
+            message.textContent = `Spieler ${currentPlayer} beginnt`;
             cells.forEach(cell => (cell.textContent = ''));
         }
 
