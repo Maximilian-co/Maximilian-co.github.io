@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>8x8 Schachbrett</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: Arial, sans-serif;
+        }
+        .chessboard {
+            display: grid;
+            grid-template-columns: repeat(8, 60px);
+            grid-template-rows: repeat(8, 60px);
+            gap: 2px;
+            background-color: #000;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #eee;
+            cursor: pointer;
+            font-size: 2em;
+            text-align: center;
+        }
+        .cell:nth-child(odd) {
+            background-color: #ddd;
+        }
+        .cell:nth-child(8n+1),
+        .cell:nth-child(8n+2),
+        .cell:nth-child(8n+3),
+        .cell:nth-child(8n+4),
+        .cell:nth-child(8n+5),
+        .cell:nth-child(8n+6),
+        .cell:nth-child(8n+7),
+        .cell:nth-child(8n+8) {
+            background-color: #eee;
+        }
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="chessboard" id="chessboard">
+        <!-- Schachbrett Zellen -->
+        <!-- 64 Zellen für 8x8 Schachbrett -->
+        <!-- Die Zellen werden dynamisch mit JavaScript gefüllt -->
+    </div>
+
+    <div class="controls">
+        <div id="message">Weiß beginnt</div>
+        <button onclick="resetBoard()">Schachbrett zurücksetzen</button>
+    </div>
+
+    <script>
+        let selectedCell = null;
+        let currentPlayer = 'W'; // W für Weiß, S für Schwarz
+
+        function setupBoard() {
+            const initialSetup = [
+                '♖', '♘', '♗', '♕', '♔', '♗', '♘', '♖', // Weiß: Turm, Springer, Läufer, Dame, König
+                '♙', '♙', '♙', '♙', '♙', '♙', '♙', '♙', // Weiße Bauern
+                '', '', '', '', '', '', '', '', // Leere Zeilen
+                '', '', '', '', '', '', '', '', 
+                '', '', '', '', '', '', '', '', 
+                '', '', '', '', '', '', '', '', 
+                '♟', '♟', '♟', '♟', '♟', '♟', '♟', '♟', // Schwarze Bauern
+                '♜', '♞', '♝', '♛', '♚', '♝', '♞', '♜'  // Schwarz: Turm, Springer, Läufer, Dame, König
+            ];
+
+            const chessboard = document.getElementById('chessboard');
+            chessboard.innerHTML = ''; // Clear existing cells
+
+            for (let i = 0; i < 64; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.innerHTML = initialSetup[i];
+                cell.onclick = () => handleCellClick(cell, i);
+                chessboard.appendChild(cell);
+            }
+
+            document.getElementById('message').textContent = `Weiß beginnt`;
+        }
+
+        function handleCellClick(cell, index) {
+            if (selectedCell === null) {
+                // Selektiere die Zelle
+                if (cell.innerHTML && (currentPlayer === 'W' && cell.innerHTML !== '♟') || (currentPlayer === 'S' && cell.innerHTML !== '♙')) {
+                    selectedCell = { cell, index };
+                    cell.style.backgroundColor = 'lightblue';
+                }
+            } else {
+                // Bewege die Figur
+                if (isValidMove(selectedCell.index, index)) {
+                    const cells = Array.from(document.querySelectorAll('.cell'));
+                    cells[index].innerHTML = selectedCell.cell.innerHTML;
+                    selectedCell.cell.innerHTML = '';
+                    selectedCell.cell.style.backgroundColor = '';
+                    selectedCell = null;
+                    currentPlayer = currentPlayer === 'W' ? 'S' : 'W';
+                    document.getElementById('message').textContent = `${currentPlayer === 'W' ? 'Weiß' : 'Schwarz'} ist am Zug`;
+                } else {
+                    selectedCell.cell.style.backgroundColor = '';
+                    selectedCell = null;
+                }
+            }
+        }
+
+        function isValidMove(fromIndex, toIndex) {
+            // Diese Funktion muss an die spezifischen Schachregeln angepasst werden
+            const fromRow = Math.floor(fromIndex / 8);
+            const fromCol = fromIndex % 8;
+            const toRow = Math.floor(toIndex / 8);
+            const toCol = toIndex % 8;
+            const piece = document.querySelector(`.cell[data-index="${fromIndex}"]`).innerHTML;
+
+            // Einfache Regelprüfung für das Beispiel. Umfassende Regeln sind komplexer.
+            if (piece.includes('♙') || piece.includes('♟')) { // Bauern bewegen sich nur geradeaus
+                return fromCol === toCol && (toRow === fromRow + 1 || toRow === fromRow - 1);
+            }
+            // Weitere Regeln für andere Figuren müssen hier hinzugefügt werden
+            return true; // Temporäre Annahme, dass jede Bewegung gültig ist
+        }
+
+        function resetBoard() {
+            setupBoard();
+        }
+
+        setupBoard(); // Initialisiere das Schachbrett beim Laden der Seite
+    </script>
+
+</body>
+</html>
